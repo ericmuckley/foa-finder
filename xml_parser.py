@@ -11,8 +11,9 @@ import xml.etree.ElementTree as ET
 
 from bs4 import BeautifulSoup
 
+import numpy as np
 
-
+# %%
 
 # set name of zip folder
 zip_dir = 'GrantsDBExtract20200626v2.zip'
@@ -49,11 +50,10 @@ soup = BeautifulSoup(doc, 'lxml')
 
 # %%
 
-titles = []
-counter = 0
 
 
-tags = [str(tag) for tag in soup.find_all()]
+
+tags = np.unique([tag.name for tag in soup.find_all()])
 
 
 '''
@@ -79,9 +79,9 @@ for entry in soup.findAll('Grants'):#"OpportunitySynopsisDetail_1_0"):
 
 # %%
 
-print('Root tag: {}'.format(root.tag))
+#print('Root tag: {}'.format(root.tag))
 
-print('Root attribute: {}'.format(root.attrib))
+#print('Root attribute: {}'.format(root.attrib))
 
 
 #for child in root:
