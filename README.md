@@ -8,3 +8,4 @@ This is an automated web scraper for finding funding opportunity announcements f
 
 `pip install beautifulsoup4`
 
+`pip install lxml`
