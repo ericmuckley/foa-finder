@@ -6,4 +6,5 @@ This is an automated web scraper for finding funding opportunity announcements f
 
 `pip install xmltodict`
 
+`pip install beautifulsoup4`
 
