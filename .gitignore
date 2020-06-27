@@ -1,8 +1,5 @@
-
+webenv/
 .DS_Store
 .ipynb_checkpoints/xml_parser-checkpoint.py
-unzipped/GrantsDBExtract20200626v2.xml
-GrantsDBExtract20200626v2.zip
-GrantsDBExtract20200626v2.zip
 *.zip
-*.zip
+*.xml
