@@ -13,7 +13,11 @@ This is an automated web scraper for finding funding opportunity announcements f
 
 
 
+## Setting environment variables
 
+On macOS: `touch ~/.bash_profile; open ~/.bash_profile`
+
+Add the line `export VAR_NAME="VAR_VALUE"`, where `VAR_NAME` and `VAR_VALUE` are the name and value of the variable.
 
 
 
