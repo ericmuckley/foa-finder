@@ -53,7 +53,7 @@ titles = []
 counter = 0
 
 
-[str(tag) for tag in soup.find_all()]
+tags = [str(tag) for tag in soup.find_all()]
 
 
 '''
