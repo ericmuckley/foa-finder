@@ -211,14 +211,13 @@ def create_slack_text(print_text=True):
     slack_text += '\n======================================='
     # loop over each FOA title and add to text
     for i in range(len(df)):
-        
-        entry_date = df['postdate'].iloc[i]
-        entry_date = entry_date[:2]+'-'+entry_date[2:4]+'-'+entry_date[4:]
-        
         slack_text += '\n{}) {} {} ({})'.format(
-            i+1, entry_date, df['title'].iloc[i].upper(), df['num'].iloc[i])
+            i+1,
+            df['postdate'].iloc[i],
+            df['title'].iloc[i].upper(),
+            df['num'].iloc[i])
     slack_text += '\n======================================='
-    slack_text += '\nShowing {} of {} FOAs pulled from grants.gov on {}, using keywords in {}'.format(
+    slack_text += '\nShowing {} of {} FOAs pulled from grants.gov on {}, with their posted dates, using keywords in {}'.format(
         len(df), len(df_full), db_date, 'https://github.com/ericmuckley/foa-finder/blob/master/keywords.csv.')
     slack_text += '\nTo view FOA details, go to https://www.grants.gov/web/grants/search-grants.html'
     slack_text += ' and search by "Opportunity Number". Opportunity numbers are shown in parenthesis after each FOA title in the above list. If the FOA cannot be found, then it has already been closed.'
@@ -239,6 +238,8 @@ slack_text = create_slack_text(print_text=True)
 send_to_slack = True
 if send_to_slack:
 
+    print('sending results to slack')
+    
     try:
         response = requests.post(
             os.environ['SLACK_WEBHOOK_URL'],
