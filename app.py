@@ -17,8 +17,8 @@ python version to use for crontab scheduling in virtual environment:
 Users/emuckley/Documents/GitHub/foa-finder/webenv/bin/python
 
 
-crontab script to run every 24 hours at the top of the hour:
-0 */24 * * * /Users/emuckley/Documents/GitHub/foa-finder/app.py >> ~/cron.log 2>&1
+crontab script to run every 24 hours at 18:05 hrs:
+5 18 * * * /Users/emuckley/Documents/GitHub/foa-finder/app.py >> ~/cron.log 2>&1
 
 
 """
