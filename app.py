@@ -84,6 +84,7 @@ def download_file_from_url(url, filename):
             if chunk:  # filter out keep-alive new chunks
                 handle.write(chunk)
         handle.close()
+        print('database successfully downloaded')
     # if file url is not found
     else:
         print('URL does not exist')
@@ -124,7 +125,8 @@ def unzip_and_soupify():
     root = tree.getroot()
     doc = str(ET.tostring(root, encoding='unicode', method='xml'))
     # initialize beautiful soup object
-    soup = BeautifulSoup(doc, 'lxml')   
+    soup = BeautifulSoup(doc, 'lxml')  
+    print('database unzipped')
     return soup
 
 
@@ -145,14 +147,19 @@ soup = unzip_and_soupify()
 def df_from_soup(soup):
     """Generate a pandas dataframe from a beautiful-soup xml object"""
     # find all tags present in the xml
-    #tags = np.unique([tag.name for tag in soup.find_all()])
+    tags = np.unique([tag.name for tag in soup.find_all()])
+    print(tags)
     # extract info from title and ID tags
     titles = [i.text.strip().lower() for i in soup.find_all('ns0:opportunitytitle')]
     ids = [i.text.strip() for i in soup.find_all('ns0:opportunitynumber')]
-    #descriptions = [i.text.strip() for i in soup.find_all('ns0:opportuitydescription')]
-    df = pd.DataFrame(columns=['title', 'num'],
-                      data=np.column_stack((titles, ids)))
+    postdates = [i.text.strip() for i in soup.find_all('ns0:postdate')]
+
+    postdates = [pd[:2]+'-'+pd[2:4]+'-'+pd[4:] for pd in postdates]
+
+    df = pd.DataFrame(columns=['title', 'num', 'postdate'],
+                      data=np.column_stack((titles, ids, postdates)))
     return df
+
 
 
 def filter_df(df):
@@ -165,6 +172,12 @@ def filter_df(df):
     # get non-keywords to avoid
     nonkeywords = list(pd.read_csv('nonkeywords.csv', header=None)[0])
     nonkeywords_str = '|'.join(nonkeywords).lower()
+    
+    # filter by post date - the current year and previous year only
+    curr_yr = np.max([int(i[-4:]) for i in df['postdate'].values])
+    prev_yr = curr_yr - 1
+    df = df[df['postdate'].str.contains('-'+str(curr_yr)+'|-'+str(prev_yr), na=False)]
+    
     # filter dataframe by keywords and nonkeywords
     df = df[df['title'].str.contains(keywords_str, na=False)]
     df = df[~df['title'].str.contains(nonkeywords_str, na=False)]
@@ -192,23 +205,28 @@ def create_slack_text(print_text=True):
     # get database date
     db_date = filename.split('GrantsDBExtract')[1].split('v2')[0]
     db_date = db_date[:4]+'-'+db_date[4:6]+'-'+db_date[6:]
+
     # create text
     slack_text = 'Funding announcements from grants.gov, extracted {}:'.format(
         db_date)
     slack_text += '\n======================================='
     # loop over each FOA title and add to text
     for i in range(len(df)):
-        slack_text += '\n{}) {} ({})'.format(
-            i+1, df['title'].iloc[i].upper(), df['num'].iloc[i])
+        
+        entry_date = df['postdate'].iloc[i]
+        entry_date = entry_date[:2]+'-'+entry_date[2:4]+'-'+entry_date[4:]
+        
+        slack_text += '\n{}) {} {} ({})'.format(
+            i+1, entry_date, df['title'].iloc[i].upper(), df['num'].iloc[i])
     slack_text += '\n======================================='
     slack_text += '\nShowing {} of {} FOAs pulled from grants.gov on {}, using keywords in {}'.format(
         len(df), len(df_full), db_date, 'https://github.com/ericmuckley/foa-finder/blob/master/keywords.csv.')
     slack_text += '\nTo view FOA details, go to https://www.grants.gov/web/grants/search-grants.html'
-    slack_text += ' and search by "Opportunity Number". Opportunity numbers are shown in parenthesis after each FOA title in the above list.'
+    slack_text += ' and search by "Opportunity Number". Opportunity numbers are shown in parenthesis after each FOA title in the above list. If the FOA cannot be found, then it has already been closed.'
     if print_text:
         print(slack_text)
     return slack_text
-        
+
     
 slack_text = create_slack_text(print_text=True)
 
@@ -221,7 +239,6 @@ slack_text = create_slack_text(print_text=True)
 
 send_to_slack = True
 if send_to_slack:
-
 
     try:
         response = requests.post(
