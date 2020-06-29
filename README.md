@@ -5,13 +5,6 @@ This is an automated web scraper for finding funding opportunity announcements f
 [Information about the format of the XML file](https://www.grants.gov/help/html/help/index.htm?rhcsh=1&callingApp=custom#t=XMLExtract%2FXMLExtract.htm)
 
 
-## Setting environment variables
-
-Environment variables are required for connecting to the Slack API. TO edit environment variables on macOS: `touch ~/.bash_profile; open ~/.bash_profile`
-
-Add the line `export VAR_NAME="VAR_VALUE"`, where `VAR_NAME` and `VAR_VALUE` are the name and value of the variable.
-
-
 
 ## File description
 
@@ -19,6 +12,16 @@ Add the line `export VAR_NAME="VAR_VALUE"`, where `VAR_NAME` and `VAR_VALUE` are
 * **keywords.csv**: keywords to use for searching FOA titles
 * **nonkeywords.csv**: keywords to avoid for searching FOA titles
 * **requirements.txt**: Requirements file for installing app dependencies with pip
+
+
+
+## Setting environment variables
+
+Environment variables are required for connecting to the Slack API. To edit environment variables on macOS: `touch ~/.bash_profile; open ~/.bash_profile`
+
+Add the line `export VAR_NAME="VAR_VALUE"`, where `VAR_NAME` and `VAR_VALUE` are the name and value of the variable.
+
+
 
 
 ## Setup for development
