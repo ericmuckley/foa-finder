@@ -147,8 +147,7 @@ soup = unzip_and_soupify()
 def df_from_soup(soup):
     """Generate a pandas dataframe from a beautiful-soup xml object"""
     # find all tags present in the xml
-    tags = np.unique([tag.name for tag in soup.find_all()])
-    print(tags)
+    #tags = np.unique([tag.name for tag in soup.find_all()])
     # extract info from title and ID tags
     titles = [i.text.strip().lower() for i in soup.find_all('ns0:opportunitytitle')]
     ids = [i.text.strip() for i in soup.find_all('ns0:opportunitynumber')]
