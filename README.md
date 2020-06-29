@@ -23,6 +23,20 @@ Add the line `export VAR_NAME="VAR_VALUE"`, where `VAR_NAME` and `VAR_VALUE` are
 
 
 
+## Running the scraper on a schedule using crontab
+
+Install using `pip install crontab`
+
+
+
+Make the python script executable using `chmod +x app.py`
+
+Use shebang line in the python script (#!/usr/bin/python3, or for venv for example: #!/Users/emuckley/Documents/Github/foa-finder/webenv/bin/python) to direct to Python exe
+
+Open scheduler using `crontab -e`. Paste the cron scheduler line. Type `:x` to save and exit scheduler. The scheduler line should look something like this for repeating at the start of the hour (0) every 24 hours:
+`0 */24 * * * /path/to/script/app.py >> ~/cron.log 2>&1`
+
+
 
 ## Setup for development
 

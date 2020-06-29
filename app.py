@@ -1,4 +1,4 @@
-#!/Documents/Github/foa-finder/webenv/bin/python
+#!/Users/emuckley/Documents/Github/foa-finder/webenv/bin/python
 
 # -*- coding: utf-8 -*-
 
@@ -13,8 +13,12 @@ What this script does:
 (5) filters the FOA dataframe by keywords
 (6) sends the filtered FOA list to a dedicated channel on Slack.
 
-python version to use for chrontab scheduling in virtual environment:
+python version to use for crontab scheduling in virtual environment:
 Users/emuckley/Documents/GitHub/foa-finder/webenv/bin/python
+
+
+crontab script to run every 24 hours at the top of the hour:
+0 */24 * * * /Users/emuckley/Documents/GitHub/foa-finder/app.py >> ~/cron.log 2>&1
 
 
 """
@@ -215,10 +219,9 @@ slack_text = create_slack_text(print_text=True)
 
 # %%%%%%%%%%%%%%%%%%%%% send message in slack %%%%%%%%%%%%%%%%%%%%%%%%
 
-send_to_slack = False
+send_to_slack = True
 if send_to_slack:
-    
-    slack_text = 'testing multi-line message: \n line 1 \n line 2'
+
 
     try:
         response = requests.post(
