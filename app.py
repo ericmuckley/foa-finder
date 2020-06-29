@@ -13,6 +13,10 @@ What this script does:
 (5) filters the FOA dataframe by keywords
 (6) sends the filtered FOA list to a dedicated channel on Slack.
 
+python version to use for chrontab scheduling in virtual environment:
+Users/emuckley/Documents/GitHub/foa-finder/webenv/bin/python
+
+
 """
 
 
