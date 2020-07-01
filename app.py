@@ -146,8 +146,6 @@ soup = unzip_and_soupify()
 
 def df_from_soup(soup):
     """Generate a pandas dataframe from a beautiful-soup xml object"""
-    # find all tags present in the xml
-    #tags = np.unique([tag.name for tag in soup.find_all()])
     # extract info from title and ID tags
     titles = [i.text.strip().lower() for i in soup.find_all('ns0:opportunitytitle')]
     ids = [i.text.strip() for i in soup.find_all('ns0:opportunitynumber')]
@@ -183,17 +181,25 @@ def filter_df(df):
     return df
 
 
+def preview_tags(soup):
+    """Preview the tags present in a beautiful-soup object"""
+    tags = np.unique([tag.name for tag in soup.find_all()])
+    for t in tags:
+        print(t)
+        print(len(soup(t)))
+        print([i.text.strip().lower() for i in soup.find_all(t)][:5])
+
+
+
+
 # get full dataframe from database
 df_full = df_from_soup(soup)
+
 
 # get dataframe filtered by keywords
 df = filter_df(df_full)
 
-
-
-
-
-
+#preview_tags(soup)
 
 
 # %%%%%%%%%%%%%%% format string message for Slack %%%%%%%%%%%%%%%%%%%%%%
@@ -235,7 +241,7 @@ slack_text = create_slack_text(print_text=True)
 
 # %%%%%%%%%%%%%%%%%%%%% send message in slack %%%%%%%%%%%%%%%%%%%%%%%%
 
-send_to_slack = True
+send_to_slack = False
 if send_to_slack:
 
     print('sending results to slack')
