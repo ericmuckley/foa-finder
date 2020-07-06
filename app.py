@@ -173,7 +173,7 @@ def filter_df(df):
     # filter by post date - the current year and previous year only
     curr_yr = np.max([int(i[-4:]) for i in df['postdate'].values])
     prev_yr = curr_yr - 1
-    df = df[df['postdate'].str.contains('-'+str(curr_yr)+'|-'+str(prev_yr), na=False)]
+    df = df[df['postdate'].str.contains('-'+str(curr_yr), na=False)]
     
     # filter dataframe by keywords and nonkeywords
     df = df[df['title'].str.contains(keywords_str, na=False)]
