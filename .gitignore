@@ -3,3 +3,6 @@ webenv/
 .ipynb_checkpoints/xml_parser-checkpoint.py
 *.zip
 *.xml
+.ipynb_checkpoints/nonkeywords-checkpoint.csv
+.ipynb_checkpoints/keywords-checkpoint.csv
+.ipynb_checkpoints/app-checkpoint.py
