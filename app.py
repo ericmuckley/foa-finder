@@ -35,6 +35,7 @@ from datetime import datetime, timedelta
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
 
+pd.options.mode.chained_assignment = None 
 
 
 # %%%%%%%%%%%%%%%%%%%% find the database %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -145,154 +146,6 @@ soup = unzip_and_soupify(filename)
 
 
 
-
-
-
-# %%%%%%%%%%%%%% convert xml to pandas dataframe %%%%%%%%%%%%%%%%%%%%
-
-
-'''
-def df_from_soup(soup):
-    """Generate a pandas dataframe from a beautiful-soup xml object"""
-    # extract info from title and ID tags
-    titles = [i.text.strip().lower() for i in soup.find_all('ns0:opportunitytitle')]
-    ids = [i.text.strip() for i in soup.find_all('ns0:opportunitynumber')]
-    postdates = [i.text.strip() for i in soup.find_all('ns0:postdate')]
-
-    postdates = [pd[:2]+'-'+pd[2:4]+'-'+pd[4:] for pd in postdates]
-
-    df = pd.DataFrame(columns=['title', 'num', 'postdate'],
-                      data=np.column_stack((titles, ids, postdates)))
-    
-    print('Created dataframe from database')
-    
-    return df
-
-
-
-def filter_df(df):
-    """Filter the dataframe by keywords and nonkeywords (words to avoid).
-    The keywords and nonkeywords are set in external csv files called
-    'keywords.csv' and 'nonkeywords.csv'"""
-    # get keywords to filter dataframe
-    keywords = list(pd.read_csv('keywords.csv', header=None)[0])
-    keywords_str = '|'.join(keywords).lower()
-    # get non-keywords to avoid
-    nonkeywords = list(pd.read_csv('nonkeywords.csv', header=None)[0])
-    nonkeywords_str = '|'.join(nonkeywords).lower()
-    
-    # filter by post date - the current year and previous year only
-    curr_yr = np.max([int(i[-4:]) for i in df['postdate'].values])
-    #prev_yr = curr_yr - 1
-    df = df[df['postdate'].str.contains('-'+str(curr_yr), na=False)]
-    
-    # filter dataframe by keywords and nonkeywords
-    df = df[df['title'].str.contains(keywords_str, na=False)]
-    df = df[~df['title'].str.contains(nonkeywords_str, na=False)]
-    
-    print('Database filtered by keywords')
-    
-    return df
-
-
-
-
-
-# get full dataframe from database
-#df_full = df_from_soup(soup)
-
-
-# get dataframe filtered by keywords
-#df = filter_df(df_full)
-
-'''
-
-
-
-# %%
-
-
-"""
-# example entry from the database:
-
-<OpportunitySynopsisDetail_1_0>
-    <OpportunityID>131073</OpportunityID>
-    <OpportunityTitle>Cooperative Ecosystem Studies Unit, Piedmont South Atlantic Coast CESU</OpportunityTitle>
-    <OpportunityNumber>G12AS20003</OpportunityNumber>
-    <OpportunityCategory>D</OpportunityCategory>
-    <FundingInstrumentType>CA</FundingInstrumentType>
-    <CategoryOfFundingActivity>ST</CategoryOfFundingActivity>
-    <CFDANumbers>15.808</CFDANumbers>
-    <EligibleApplicants>25</EligibleApplicants>
-    <AdditionalInformationOnEligibility>This financial assistance opportunity is being issued under a Cooperative Ecosystem Studies Unit (CESU) Program.  CESUs are partnerships that provide research, technical assistance, and education.  This assistance is provided through a CESU cooperative agreement, which is neither a contract nor a grant.  Eligible recipients must be a participating partner of the Piedmont - South Atlantic Coast CESU Program.</AdditionalInformationOnEligibility>
-    <AgencyCode>DOI-USGS1</AgencyCode>
-    <AgencyName>Geological Survey</AgencyName>
-    <PostDate>11172011</PostDate>
-    <CloseDate>11292011</CloseDate>
-    <LastUpdatedDate>11282011</LastUpdatedDate>
-    <AwardCeiling>0</AwardCeiling>
-    <AwardFloor>0</AwardFloor>
-    <EstimatedTotalProgramFunding>31900</EstimatedTotalProgramFunding>
-    <ExpectedNumberOfAwards>1</ExpectedNumberOfAwards>
-    <Description>The USGS Southeast Ecological Science Center seeks to provide financial assistance for research investigating the use of fish otoliths to identify prime nursery areas for common snook and red drum in Tampa Bay Florida.</Description>
-    <Version>Synopsis 2</Version>
-    <CostSharingOrMatchingRequirement>No</CostSharingOrMatchingRequirement>
-    <ArchiveDate>12172011</ArchiveDate>
-    <AdditionalInformationURL>http://www.grants.gov/</AdditionalInformationURL>
-    <AdditionalInformationText>http://www.grants.gov/ </AdditionalInformationText>
-    <GrantorContactEmail>fgraves@usgs.gov</GrantorContactEmail>
-    <GrantorContactEmailDescription>fgraves@usgs.gov</GrantorContactEmailDescription>
-    <GrantorContactText>Faith Graves, 703-648-7356&amp;lt;br/&amp;gt;fgraves@usgs.gov&amp;lt;br/&amp;gt;</GrantorContactText>
-</OpportunitySynopsisDetail_1_0>
-
-"""
-
-
-
-
-
-
-
-
-def preview_tags(soup):
-    """Preview the tags present in a beautiful-soup object"""
-    tags = np.unique([tag.name for tag in soup.find_all()])
-    
-    """
-    array(['body', 'html', 'ns0:additionalinformationoneligibility',
-       'ns0:additionalinformationtext', 'ns0:additionalinformationurl',
-       'ns0:agencycode', 'ns0:agencyname', 'ns0:archivedate',
-       'ns0:awardceiling', 'ns0:awardfloor', 'ns0:categoryexplanation',
-       'ns0:categoryoffundingactivity', 'ns0:cfdanumbers',
-       'ns0:closedate', 'ns0:closedateexplanation',
-       'ns0:costsharingormatchingrequirement', 'ns0:description',
-       'ns0:eligibleapplicants', 'ns0:estimatedawarddate',
-       'ns0:estimatedprojectstartdate', 'ns0:estimatedsynopsisclosedate',
-       'ns0:estimatedsynopsisclosedateexplanation',
-       'ns0:estimatedsynopsispostdate',
-       'ns0:estimatedtotalprogramfunding', 'ns0:expectednumberofawards',
-       'ns0:fiscalyear', 'ns0:fundinginstrumenttype',
-       'ns0:grantorcontactemail', 'ns0:grantorcontactemaildescription',
-       'ns0:grantorcontactname', 'ns0:grantorcontactphonenumber',
-       'ns0:grantorcontacttext', 'ns0:grants', 'ns0:lastupdateddate',
-       'ns0:opportunitycategory', 'ns0:opportunitycategoryexplanation',
-       'ns0:opportunityforecastdetail_1_0', 'ns0:opportunityid',
-       'ns0:opportunitynumber', 'ns0:opportunitysynopsisdetail_1_0',
-       'ns0:opportunitytitle', 'ns0:postdate', 'ns0:version'],
-      dtype='<U41')
-    """
-    
-    for t in tags:
-        print(t)
-        #if 'ns0:' in t:
-        #    print('{} entries: {}'.format(t.split('ns0:')[1], len(soup(t))))
-            
-    #    print([i.text.strip().lower() for i in soup.find_all(t)][:5])
-
-
-
-#preview_tags(soup)
-
 # %% populate dataframe with every entry tag
 
 
@@ -310,6 +163,34 @@ def soup_to_df(soup):
 
     # create dataframe from dictionary
     df = pd.DataFrame.from_dict(dic, orient='index')
+    return df
+
+
+
+# get full dataframe of all FOAs
+dff = soup_to_df(soup)
+
+
+
+
+#%%
+
+
+def to_date(date_str):
+    """Convert date string from database into date object"""
+    return datetime.strptime(date_str, '%m%d%Y').date()
+
+
+def is_recent(date, days=60):
+    """Check if date occured within n amount of days from today"""
+    return (datetime.today().date() - to_date(date)).days <= days
+
+
+def sort_by_recent_updates(df):
+    """Sort the dataframe by recently updated dates"""
+    new_dates = [i[4:]+'-'+i[:2]+'-'+i[2:4] for i in df['lastupdateddate']]
+    df['updatedate'] = new_dates
+    df = df.sort_values(by=['updatedate'], ascending=False)
     return df
 
 
@@ -338,23 +219,19 @@ def filter_df(df):
     return df
 
 
-df_full = soup_to_df(soup)
+# include only by recently updated FOAs
+df = dff[[is_recent(i) for i in dff['lastupdateddate']]]
+
+# sort by newest FOAs at the top
+df = sort_by_recent_updates(df)
+
+# filter by keywords
 
 
-df = df_full[df_full['lastupdateddate'].str.endswith('2020')]
-
-
-df2 = filter_df(df)
 
 
 
-def filter_by_date(df):
-    """Filter dataframe by date details"""
-    date_cols = ['postdate',
-     'closedate',
-     'lastupdateddate',
-     'archivedate',
-     'closedateexplanation']
+
 
 
 
