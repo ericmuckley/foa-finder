@@ -199,11 +199,11 @@ def filter_df(df):
 
 
 # get full dataframe from database
-df_full = df_from_soup(soup)
+#df_full = df_from_soup(soup)
 
 
 # get dataframe filtered by keywords
-df = filter_df(df_full)
+#df = filter_df(df_full)
 
 
 
@@ -296,22 +296,28 @@ def preview_tags(soup):
 # %% populate dataframe with every entry tag
 
 
-        
-# list of bs4 objects - each object corresponds to one FOA
-foa_objs = [tag for tag in soup.find_all(
-    ) if 'opportunitysynopsisdetail' in tag.name.lower()]
+
+def soup_to_df(soup):
+    """Convert beautifulsoup object from grants.gov XML into dataframe"""
+    # list of bs4 FOA objects
+    s = 'opportunitysynopsisdetail'
+    foa_objs = [tag for tag in soup.find_all() if s in tag.name.lower()]
+
+    # loop over each FOA in the database and save its details as a dictionary
+    dic = {}
+    for i, foa in enumerate(foa_objs):
+        ch = foa.findChildren()
+        dic[i] = {fd.name.split('ns0:')[1]:fd.text for fd in ch}
+
+    # create dataframe from dictionary
+    df = pd.DataFrame.from_dict(dic, orient='index')
+    return df
 
 
-
-dic = {}
-
-
-# loop over each FOA in the database and save its details as a dictionary
-for i, foa in enumerate(foa_objs):
-    dic[i] = {fd.name.split('ns0:')[1]: fd.text for fd in foa.findChildren()}
+df_full = soup_to_df(soup)
 
 
-df2 = pd.DataFrame.from_dict(dic, orient='index')
+df = df_full[df_full['lastupdateddate'].str.endswith('2020')]
 
 
 # get name and text from each child tag
