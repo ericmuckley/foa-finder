@@ -151,7 +151,7 @@ soup = unzip_and_soupify(filename)
 # %%%%%%%%%%%%%% convert xml to pandas dataframe %%%%%%%%%%%%%%%%%%%%
 
 
-
+'''
 def df_from_soup(soup):
     """Generate a pandas dataframe from a beautiful-soup xml object"""
     # extract info from title and ID tags
@@ -205,7 +205,7 @@ def filter_df(df):
 # get dataframe filtered by keywords
 #df = filter_df(df_full)
 
-
+'''
 
 
 
@@ -296,7 +296,6 @@ def preview_tags(soup):
 # %% populate dataframe with every entry tag
 
 
-
 def soup_to_df(soup):
     """Convert beautifulsoup object from grants.gov XML into dataframe"""
     # list of bs4 FOA objects
@@ -314,16 +313,48 @@ def soup_to_df(soup):
     return df
 
 
+def filter_df(df):
+    """Filter the dataframe by keywords and nonkeywords (words to avoid).
+    The keywords and nonkeywords are set in external csv files called
+    'keywords.csv' and 'nonkeywords.csv'"""
+    # get keywords to filter dataframe
+    keywords = list(pd.read_csv('keywords.csv', header=None)[0])
+    keywords_str = '|'.join(keywords).lower()
+    # get non-keywords to avoid
+    nonkeywords = list(pd.read_csv('nonkeywords.csv', header=None)[0])
+    nonkeywords_str = '|'.join(nonkeywords).lower()
+    
+    # filter by post date - the current year and previous year only
+    #curr_yr = np.max([int(i[-4:]) for i in df['postdate'].values])
+    #prev_yr = curr_yr - 1
+    #df = df[df['postdate'].str.contains('-'+str(curr_yr), na=False)]
+    
+    # filter dataframe by keywords and nonkeywords
+    df = df[df['description'].str.contains(keywords_str, na=False)]
+    df = df[~df['description'].str.contains(nonkeywords_str, na=False)]
+    
+    print('Database filtered by keywords')
+    
+    return df
+
+
 df_full = soup_to_df(soup)
 
 
 df = df_full[df_full['lastupdateddate'].str.endswith('2020')]
 
 
-# get name and text from each child tag
-#foa_details[0].name
-#foa_details[0].text
+df2 = filter_df(df)
 
+
+
+def filter_by_date(df):
+    """Filter dataframe by date details"""
+    date_cols = ['postdate',
+     'closedate',
+     'lastupdateddate',
+     'archivedate',
+     'closedateexplanation']
 
 
 
