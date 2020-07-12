@@ -146,7 +146,7 @@ soup = unzip_and_soupify(filename)
 
 
 
-# %% populate dataframe with every entry tag
+# %%%%%%%%%%%% populate dataframe with every xml tag %%%%%%%%%%%%%%%%%%%%
 
 
 def soup_to_df(soup):
@@ -173,7 +173,7 @@ dff = soup_to_df(soup)
 
 
 
-#%%
+# %%%%%%%%%%%%%%%%%% filter by dates and keywords %%%%%%%%%%%%%%%%%%%%%%%%
 
 
 def to_date(date_str):
@@ -186,15 +186,30 @@ def is_recent(date, days=60):
     return (datetime.today().date() - to_date(date)).days <= days
 
 
+def is_open(date):
+    """Check if FOA is still open (closedate is in the past)"""
+    if type(date) == float:
+        return True
+    elif type(date) == str:
+        return (datetime.today().date() - to_date(date)).days <= 0
+    
+
+def reformat_date(s):
+    """Reformat the date string with hyphens so its easier to read"""
+    s = str(s)
+    return s[4:]+'-'+s[:2]+'-'+s[2:4]
+
+
 def sort_by_recent_updates(df):
     """Sort the dataframe by recently updated dates"""
-    new_dates = [i[4:]+'-'+i[:2]+'-'+i[2:4] for i in df['lastupdateddate']]
-    df['updatedate'] = new_dates
+    new_dates = [reformat_date(i) for i in df['lastupdateddate']]
+    df.insert(1, 'updatedate', new_dates)
     df = df.sort_values(by=['updatedate'], ascending=False)
+    print('Databae sorted and filtered by date')
     return df
 
 
-def filter_df(df):
+def filter_by_keywords(df):
     """Filter the dataframe by keywords and nonkeywords (words to avoid).
     The keywords and nonkeywords are set in external csv files called
     'keywords.csv' and 'nonkeywords.csv'"""
@@ -219,16 +234,18 @@ def filter_df(df):
     return df
 
 
-# include only by recently updated FOAs
+
+# include only recently updated FOAs
 df = dff[[is_recent(i) for i in dff['lastupdateddate']]]
+
+# include only FOAs which are not closed
+df = df[[is_open(i) for i in df['closedate']]]
 
 # sort by newest FOAs at the top
 df = sort_by_recent_updates(df)
 
 # filter by keywords
-
-
-
+df = filter_by_keywords(df)
 
 
 
@@ -238,28 +255,37 @@ df = sort_by_recent_updates(df)
 # %%%%%%%%%%%%%%% format string message for Slack %%%%%%%%%%%%%%%%%%%%%%
 
 
-def create_slack_text(print_text=True):
+def create_slack_text(filename, df, print_text=True):
     """Create text to send into Slack"""
     # get database date
     db_date = filename.split('GrantsDBExtract')[1].split('v2')[0]
     db_date = db_date[:4]+'-'+db_date[4:6]+'-'+db_date[6:]
 
     # create text
-    slack_text = 'Funding announcements from grants.gov, extracted {}:'.format(
-        db_date)
+    slack_text = 'Showing {} recently updated FOAs from grants.gov, extracted {}:'.format(
+        len(df), db_date)
     slack_text += '\n======================================='
+    
+    base_hyperlink = r'https://www.grants.gov/web/grants/search-grants.html?keywords='
+    
     # loop over each FOA title and add to text
     for i in range(len(df)):
-        slack_text += '\n{}) {} {} ({})'.format(
+        
+        hyperlink = base_hyperlink + df['opportunitynumber'].iloc[i]
+        
+        slack_text += '\n{}) Updated: {},  Closes: {}, Title: {}, {} ({}) \n{}'.format(
             i+1,
-            df['postdate'].iloc[i],
-            df['title'].iloc[i].upper(),
-            df['num'].iloc[i])
-    slack_text += '\n======================================='
-    slack_text += '\nShowing {} of {} FOAs pulled from grants.gov on {}, with their posted dates, using keywords in {}'.format(
-        len(df), len(df_full), db_date, 'https://github.com/ericmuckley/foa-finder/blob/master/keywords.csv.')
-    slack_text += '\nTo view FOA details, go to https://www.grants.gov/web/grants/search-grants.html'
-    slack_text += ' and search by "Opportunity Number". Opportunity numbers are shown in parenthesis after each FOA title in the above list. If the FOA cannot be found, then it has already been closed.'
+            df['updatedate'].iloc[i],
+            reformat_date(df['closedate'].iloc[i]),
+            df['opportunitytitle'].iloc[i].upper(),
+            df['opportunitynumber'].iloc[i],
+            df['opportunityid'].iloc[i],
+            hyperlink)
+        slack_text += '\n----------------------------------'
+
+    slack_text += '\nFOAs filtered by date and keywords in {}'.format(
+        'https://github.com/ericmuckley/foa-finder/blob/master/keywords.csv.')
+
     if print_text:
         print(slack_text)
     else:
@@ -269,8 +295,7 @@ def create_slack_text(print_text=True):
 
 
     
-slack_text = create_slack_text()
-
+slack_text = create_slack_text(filename, df)
 
 
 
