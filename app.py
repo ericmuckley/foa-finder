@@ -294,7 +294,7 @@ def create_slack_text(filename, df, print_text=True):
 
 
 
-    
+# create the text to send to slack
 slack_text = create_slack_text(filename, df)
 
 
@@ -303,10 +303,11 @@ slack_text = create_slack_text(filename, df)
 
 # %%%%%%%%%%%%%%%%%%%%% send message in slack %%%%%%%%%%%%%%%%%%%%%%%%
 
+# send text to slack
 send_to_slack = False
 if send_to_slack:
 
-    print('sending results to slack')
+    print('Sending results to slack')
     
     try:
         response = requests.post(
