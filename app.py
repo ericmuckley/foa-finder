@@ -113,6 +113,10 @@ download_file_from_url(url, filename)
 def unzip_and_soupify(filename, unzipped_dirname='unzipped'):
     """Unzip a zip file and parse it using beautiful soup"""
 
+    # if unzipped directory doesn't exist, create it
+    if not os.path.exists(unzipped_dirname):
+        os.makedirs(unzipped_dirname)
+
     # remove all previously-downloaded zip files
     for f in os.listdir(unzipped_dirname):
         os.remove(os.path.join(unzipped_dirname, f))
