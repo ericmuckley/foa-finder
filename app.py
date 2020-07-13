@@ -305,14 +305,12 @@ slack_text = create_slack_text(filename, df)
 
 
 
-# %%%%%%%%%%%%%%%%%%%%% send message in slack %%%%%%%%%%%%%%%%%%%%%%%%
+# %%
 
-# send text to slack
-send_to_slack = False
-if send_to_slack:
 
+def send_to_slack(slack_text):
+    """Send results to a channel on Slack"""
     print('Sending results to slack')
-    
     try:
         response = requests.post(
             os.environ['SLACK_WEBHOOK_URL'],
@@ -322,4 +320,10 @@ if send_to_slack:
     except:
         print('Connection to Slack could not be established.')
     
+
+
+# send text to slack
+#send_to_slack(slack_text
+
+
 
