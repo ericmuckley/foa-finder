@@ -29,13 +29,12 @@ import json
 import time
 import zipfile
 import requests
-import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
 
-pd.options.mode.chained_assignment = None 
+pd.options.mode.chained_assignment = None
 
 
 # %%%%%%%%%%%%%%%%%%%% find the database %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,13 +45,13 @@ def get_xml_url_and_filename():
     posted on grants.gov."""
 
     day_to_try = datetime.today()
-    
+
     file_found = None
     while file_found is None:
         url = 'https://www.grants.gov/extract/GrantsDBExtract{}v2.zip'.format(
             day_to_try.strftime('%Y%m%d'))
         response = requests.get(url, stream=True)
-        
+
         # look back in time if todays data is not posted yet
         if response.status_code == 200:
             file_found = url
@@ -61,18 +60,14 @@ def get_xml_url_and_filename():
 
         filename = 'GrantsDBExtract{}v2.zip'.format(
             day_to_try.strftime('%Y%m%d'))
-    
-    print('Found database file {}'.format(filename))
-    
-    return url, filename
 
+    print('Found database file {}'.format(filename))
+
+    return url, filename
 
 
 # get url and filename of the latest database available for extraction
 url, filename = get_xml_url_and_filename()
-
-
-
 
 
 # %%%%%%%%%%%%%%%%%%%% download the database %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -98,13 +93,8 @@ def download_file_from_url(url, filename):
         print('URL does not exist')
 
 
-
-
-
 # download the database zip file
 download_file_from_url(url, filename)
-
-
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%% unzip and parse file %%%%%%%%%%%%%%%%%%%%%
@@ -120,34 +110,31 @@ def unzip_and_soupify(filename, unzipped_dirname='unzipped'):
     # remove all previously-downloaded zip files
     for f in os.listdir(unzipped_dirname):
         os.remove(os.path.join(unzipped_dirname, f))
-    
+
     # unzip raw file
     with zipfile.ZipFile(filename, "r") as z:
         z.extractall(unzipped_dirname)
-    
+
     # get path of file in unzipped folder
     unzipped_filepath = os.path.join(
         unzipped_dirname,
         os.listdir(unzipped_dirname)[0])
-    
+
     print('Unzipping {}'.format(unzipped_filepath))
-    
+
     # parse as tree and convert to string
     tree = ET.parse(unzipped_filepath)
     root = tree.getroot()
     doc = str(ET.tostring(root, encoding='unicode', method='xml'))
     # initialize beautiful soup object
-    soup = BeautifulSoup(doc, 'lxml')  
+    soup = BeautifulSoup(doc, 'lxml')
     print('Database unzipped')
-    
-    return soup
 
+    return soup
 
 
 # get beautiful soup object from parsed zip file
 soup = unzip_and_soupify(filename)
-
-
 
 
 # %%%%%%%%%%%% populate dataframe with every xml tag %%%%%%%%%%%%%%%%%%%%
@@ -163,22 +150,18 @@ def soup_to_df(soup):
     dic = {}
     for i, foa in enumerate(foa_objs):
         ch = foa.findChildren()
-        dic[i] = {fd.name.split('ns0:')[1]:fd.text for fd in ch}
+        dic[i] = {fd.name.split('ns0:')[1]: fd.text for fd in ch}
 
     # create dataframe from dictionary
     df = pd.DataFrame.from_dict(dic, orient='index')
     return df
 
 
-
 # get full dataframe of all FOAs
 dff = soup_to_df(soup)
 
 
-
-
 # %%%%%%%%%%%%%%%%%% filter by dates and keywords %%%%%%%%%%%%%%%%%%%%%%%%
-
 
 def to_date(date_str):
     """Convert date string from database into date object"""
@@ -196,7 +179,7 @@ def is_open(date):
         return True
     elif type(date) == str:
         return (datetime.today().date() - to_date(date)).days <= 0
-    
+
 
 def reformat_date(s):
     """Reformat the date string with hyphens so its easier to read"""
@@ -223,20 +206,19 @@ def filter_by_keywords(df):
     # get non-keywords to avoid
     nonkeywords = list(pd.read_csv('nonkeywords.csv', header=None)[0])
     nonkeywords_str = '|'.join(nonkeywords).lower()
-    
+
     # filter by post date - the current year and previous year only
-    #curr_yr = np.max([int(i[-4:]) for i in df['postdate'].values])
-    #prev_yr = curr_yr - 1
-    #df = df[df['postdate'].str.contains('-'+str(curr_yr), na=False)]
-    
+    # curr_yr = np.max([int(i[-4:]) for i in df['postdate'].values])
+    # prev_yr = curr_yr - 1
+    # df = df[df['postdate'].str.contains('-'+str(curr_yr), na=False)]
+
     # filter dataframe by keywords and nonkeywords
     df = df[df['description'].str.contains(keywords_str, na=False)]
     df = df[~df['description'].str.contains(nonkeywords_str, na=False)]
-    
-    print('Database filtered by keywords')
-    
-    return df
 
+    print('Database filtered by keywords')
+
+    return df
 
 
 # include only recently updated FOAs
@@ -252,10 +234,6 @@ df = sort_by_recent_updates(df)
 df = filter_by_keywords(df)
 
 
-
-
-
-
 # %%%%%%%%%%%%%%% format string message for Slack %%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -269,14 +247,14 @@ def create_slack_text(filename, df, print_text=True):
     slack_text = 'Showing {} recently updated FOAs from grants.gov, extracted {}:'.format(
         len(df), db_date)
     slack_text += '\n======================================='
-    
+
     base_hyperlink = r'https://www.grants.gov/web/grants/search-grants.html?keywords='
-    
+
     # loop over each FOA title and add to text
     for i in range(len(df)):
-        
+
         hyperlink = base_hyperlink + df['opportunitynumber'].iloc[i]
-        
+
         slack_text += '\n{}) Updated: {},  Closes: {}, Title: {}, {} ({}) \n{}'.format(
             i+1,
             df['updatedate'].iloc[i],
@@ -297,12 +275,8 @@ def create_slack_text(filename, df, print_text=True):
     return slack_text
 
 
-
 # create the text to send to slack
 slack_text = create_slack_text(filename, df)
-
-
-
 
 
 # %%
@@ -319,11 +293,7 @@ def send_to_slack(slack_text):
         print('Slack response: ' + str(response.text))
     except:
         print('Connection to Slack could not be established.')
-    
 
 
 # send text to slack
-#send_to_slack(slack_text)
-
-
-
+# send_to_slack(slack_text)
