@@ -168,7 +168,7 @@ def to_date(date_str):
     return datetime.strptime(date_str, '%m%d%Y').date()
 
 
-def is_recent(date, days=60):
+def is_recent(date, days=14):
     """Check if date occured within n amount of days from today"""
     return (datetime.today().date() - to_date(date)).days <= days
 
