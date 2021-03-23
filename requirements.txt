@@ -18,7 +18,7 @@ future==0.18.2
 gunicorn==20.0.4
 idna==2.9
 itsdangerous==1.1.0
-lxml==4.6.2
+lxml==4.6.3
 MarkupSafe==1.1.1
 multidict==4.7.6
 numpy==1.19.0
