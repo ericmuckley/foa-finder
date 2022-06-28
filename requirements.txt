@@ -20,7 +20,7 @@ idna==2.9
 itsdangerous==1.1.0
 MarkupSafe==1.1.1
 multidict==4.7.6
-numpy==1.19.0
+numpy==1.22.0
 pandas==1.0.5
 plotly==4.8.2
 python-dateutil==2.8.1
